@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Cubik, личный сайт для премиального броска кубиков."
+    />
+    <title>Cubik — бросок кубиков</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell" aria-labelledby="app-title">
+      <section class="hero-panel">
+        <header class="topbar">
+          <div>
+            <p class="kicker">CUBIK</p>
+            <h1 id="app-title">Бросок кубиков</h1>
+          </div>
+          <div class="rng-state" aria-live="polite">
+            <span class="rng-dot" aria-hidden="true"></span>
+            <span id="roll-state">Готово</span>
+          </div>
+        </header>
+
+        <div class="dice-stage" aria-live="polite">
+          <div class="dice-field" id="dice-field"></div>
+        </div>
+
+        <section class="control-deck" aria-label="Панель броска">
+          <div class="count-control">
+            <label for="dice-count">Количество</label>
+            <div class="stepper">
+              <button type="button" class="step-button" id="decrease-count" aria-label="Уменьшить количество кубиков">
+                −
+              </button>
+              <input
+                id="dice-count"
+                class="count-input"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                max="12"
+                value="2"
+                aria-describedby="count-note"
+              />
+              <button type="button" class="step-button" id="increase-count" aria-label="Увеличить количество кубиков">
+                +
+              </button>
+            </div>
+            <p id="count-note" class="control-note">От 1 до 12</p>
+          </div>
+
+          <button type="button" class="roll-button" id="roll-button">
+            Бросить
+          </button>
+
+          <div class="result-panel">
+            <div>
+              <span class="result-label">Сумма</span>
+              <strong id="total-result">7</strong>
+            </div>
+            <div>
+              <span class="result-label">Выпало</span>
+              <strong id="combo-result">1 + 6</strong>
+            </div>
+          </div>
+        </section>
+
+        <aside class="history-strip" aria-label="История бросков">
+          <span class="history-label">История</span>
+          <ol id="history-list"></ol>
+        </aside>
+      </section>
+    </main>
+
+    <template id="die-template">
+      <div class="die-wrap">
+        <div class="die" aria-hidden="true">
+          <div class="die-face face-1" data-face="1"></div>
+          <div class="die-face face-2" data-face="2"></div>
+          <div class="die-face face-3" data-face="3"></div>
+          <div class="die-face face-4" data-face="4"></div>
+          <div class="die-face face-5" data-face="5"></div>
+          <div class="die-face face-6" data-face="6"></div>
+        </div>
+        <span class="sr-only die-reader"></span>
+      </div>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>
