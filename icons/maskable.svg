@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Cubik">
+  <rect width="512" height="512" fill="#050505"/>
+  <rect x="74" y="74" width="364" height="364" rx="58" fill="none" stroke="#242424" stroke-width="2"/>
+  <circle cx="382" cy="132" r="12" fill="#20d4df"/>
+  <g filter="url(#shadow)">
+    <rect x="154" y="154" width="204" height="204" rx="32" fill="url(#die)" transform="rotate(-7 256 256)"/>
+    <circle cx="212" cy="210" r="16" fill="#050505" transform="rotate(-7 256 256)"/>
+    <circle cx="294" cy="202" r="16" fill="#050505" transform="rotate(-7 256 256)"/>
+    <circle cx="215" cy="256" r="16" fill="#050505" transform="rotate(-7 256 256)"/>
+    <circle cx="297" cy="256" r="16" fill="#050505" transform="rotate(-7 256 256)"/>
+    <circle cx="220" cy="307" r="16" fill="#050505" transform="rotate(-7 256 256)"/>
+    <circle cx="302" cy="298" r="16" fill="#050505" transform="rotate(-7 256 256)"/>
+  </g>
+  <defs>
+    <linearGradient id="die" x1="164" y1="154" x2="344" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff"/>
+      <stop offset=".62" stop-color="#eef4f4"/>
+      <stop offset="1" stop-color="#cdd5d5"/>
+    </linearGradient>
+    <filter id="shadow" x="106" y="106" width="300" height="300" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="15" flood-color="#000000" flood-opacity=".44"/>
+    </filter>
+  </defs>
+</svg>

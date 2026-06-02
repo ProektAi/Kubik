@@ -294,4 +294,10 @@ window.addEventListener("pointermove", stirFromEvent, { passive: true });
 window.addEventListener("pointerdown", stirFromEvent, { passive: true });
 window.addEventListener("keydown", stirFromEvent);
 
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+
 renderDice();
