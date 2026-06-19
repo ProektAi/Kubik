@@ -1,10 +1,10 @@
-const CACHE_NAME = "cubik-pwa-v2";
+const CACHE_NAME = "cubik-pwa-v3";
 const APP_SHELL = [
   "./",
   "index.html",
-  "styles.css",
-  "script.js",
-  "manifest.webmanifest",
+  "styles.css?v=3",
+  "script.js?v=3",
+  "manifest.webmanifest?v=3",
   "icons/icon.svg",
   "icons/icon-192.png",
   "icons/icon-512.png",
