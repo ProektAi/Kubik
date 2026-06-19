@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Cubik, личный сайт для премиального броска кубиков."
+      content="Cubik, личный сайт для премиального броска кубиков и карт."
     />
     <meta name="theme-color" content="#050505" />
     <meta name="application-name" content="Cubik" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Cubik" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>Cubik | бросок кубиков</title>
+    <title>Cubik | кубики и карты</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -24,7 +24,7 @@
         <header class="topbar">
           <div>
             <p class="kicker">CUBIK</p>
-            <h1 id="app-title">Бросок кубиков</h1>
+            <h1 id="app-title">Кубики и карты</h1>
           </div>
           <div class="rng-state" aria-live="polite">
             <span class="rng-dot" aria-hidden="true"></span>
@@ -32,54 +32,120 @@
           </div>
         </header>
 
-        <div class="dice-stage" aria-live="polite">
-          <div class="dice-field" id="dice-field"></div>
-        </div>
-
-        <section class="control-deck" aria-label="Панель броска">
-          <div class="count-control">
-            <label for="dice-count">Количество</label>
-            <div class="stepper">
-              <button type="button" class="step-button" id="decrease-count" aria-label="Уменьшить количество кубиков">
-                −
-              </button>
-              <input
-                id="dice-count"
-                class="count-input"
-                type="number"
-                inputmode="numeric"
-                min="1"
-                max="12"
-                value="2"
-                aria-describedby="count-note"
-              />
-              <button type="button" class="step-button" id="increase-count" aria-label="Увеличить количество кубиков">
-                +
-              </button>
-            </div>
-            <p id="count-note" class="control-note">От 1 до 12</p>
-          </div>
-
-          <button type="button" class="roll-button" id="roll-button">
-            Бросить
+        <nav class="mode-tabs" aria-label="Режим">
+          <button type="button" class="mode-tab is-active" data-mode="dice" aria-pressed="true">
+            Кубики
           </button>
+          <button type="button" class="mode-tab" data-mode="cards" aria-pressed="false">
+            Карты
+          </button>
+        </nav>
 
-          <div class="result-panel">
-            <div>
-              <span class="result-label">Сумма</span>
-              <strong id="total-result">7</strong>
-            </div>
-            <div>
-              <span class="result-label">Выпало</span>
-              <strong id="combo-result">1 + 6</strong>
-            </div>
+        <section class="game-view is-active" id="dice-view" aria-label="Бросок кубиков">
+          <div class="dice-stage" aria-live="polite">
+            <div class="dice-field" id="dice-field"></div>
           </div>
+
+          <section class="control-deck" aria-label="Панель броска кубиков">
+            <div class="count-control">
+              <label for="dice-count">Количество</label>
+              <div class="stepper">
+                <button type="button" class="step-button" id="decrease-count" aria-label="Уменьшить количество кубиков">
+                  −
+                </button>
+                <input
+                  id="dice-count"
+                  class="count-input"
+                  type="number"
+                  inputmode="numeric"
+                  min="1"
+                  max="12"
+                  value="2"
+                  aria-describedby="count-note"
+                />
+                <button type="button" class="step-button" id="increase-count" aria-label="Увеличить количество кубиков">
+                  +
+                </button>
+              </div>
+              <p id="count-note" class="control-note">От 1 до 12</p>
+            </div>
+
+            <button type="button" class="roll-button" id="roll-button">
+              Бросить
+            </button>
+
+            <div class="result-panel">
+              <div>
+                <span class="result-label">Сумма</span>
+                <strong id="total-result">7</strong>
+              </div>
+              <div>
+                <span class="result-label">Выпало</span>
+                <strong id="combo-result">1 + 6</strong>
+              </div>
+            </div>
+          </section>
+
+          <aside class="history-strip" aria-label="История бросков кубиков">
+            <span class="history-label">История</span>
+            <ol id="history-list"></ol>
+          </aside>
         </section>
 
-        <aside class="history-strip" aria-label="История бросков">
-          <span class="history-label">История</span>
-          <ol id="history-list"></ol>
-        </aside>
+        <section class="game-view" id="cards-view" aria-label="Бросок карт" hidden>
+          <div class="card-stage" aria-live="polite">
+            <div class="card-field" id="card-field"></div>
+          </div>
+
+          <section class="control-deck card-control-deck" aria-label="Панель броска карт">
+            <div class="count-control deck-control">
+              <span class="field-label">Колода</span>
+              <div class="segmented-control" role="group" aria-label="Тип колоды">
+                <button type="button" class="segment-button is-active" data-deck="playing36" aria-pressed="true">
+                  36 карт
+                </button>
+                <button type="button" class="segment-button" data-deck="playing52" aria-pressed="false">
+                  52 карты
+                </button>
+                <button type="button" class="segment-button" data-deck="tarot" aria-pressed="false">
+                  Таро
+                </button>
+              </div>
+            </div>
+
+            <div class="count-control card-count-control">
+              <span class="field-label">Карт</span>
+              <div class="segmented-control compact" role="group" aria-label="Количество карт">
+                <button type="button" class="segment-button is-active" data-card-count="2" aria-pressed="true">
+                  2
+                </button>
+                <button type="button" class="segment-button" data-card-count="3" aria-pressed="false">
+                  3
+                </button>
+              </div>
+            </div>
+
+            <button type="button" class="roll-button" id="draw-button">
+              Бросить карты
+            </button>
+
+            <div class="result-panel card-result-panel">
+              <div>
+                <span class="result-label">Колода</span>
+                <strong id="deck-result">36 карт</strong>
+              </div>
+              <div>
+                <span class="result-label">Выпало</span>
+                <strong id="card-result">Туз пик, 9 червей</strong>
+              </div>
+            </div>
+          </section>
+
+          <aside class="history-strip" aria-label="История бросков карт">
+            <span class="history-label">История</span>
+            <ol id="card-history-list"></ol>
+          </aside>
+        </section>
       </section>
     </main>
 

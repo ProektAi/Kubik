@@ -1,7 +1,7 @@
 {
   "name": "Cubik",
   "short_name": "Cubik",
-  "description": "Премиальный бросок кубиков на черном столе.",
+  "description": "Премиальный бросок кубиков и карт на черном столе.",
   "lang": "ru",
   "dir": "ltr",
   "start_url": "./",

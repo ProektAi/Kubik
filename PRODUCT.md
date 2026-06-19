@@ -6,15 +6,15 @@ product
 
 ## Users
 
-Personal use by the site owner and guests who need a quick, believable dice roll in the browser. The user is focused on one task: choose the number of dice and roll.
+Personal use by the site owner and guests who need a quick, believable dice or card draw in the browser. The user is focused on one task: choose the mode, choose the amount, and roll.
 
 ## Product Purpose
 
-Cubik provides a polished dice-rolling tool with clear results, a visible total, and a randomness implementation that avoids predictable patterns.
+Cubik provides a polished dice-rolling and card-drawing tool with clear results, a visible total for dice, separate deck modes for cards, and a randomness implementation that avoids predictable patterns.
 
 ## Brand Personality
 
-Dark, premium, precise. The interface should feel like a quiet black gaming table with bright physical dice, not a toy page.
+Dark, premium, precise. The interface should feel like a quiet black gaming table with bright physical dice and clean physical cards, not a toy page.
 
 ## Anti-references
 
@@ -22,8 +22,8 @@ Avoid casino clutter, neon overload, childish board-game visuals, generic purple
 
 ## Design Principles
 
-- Keep the dice as the primary object on screen.
-- Make the roll feel physical, but keep interaction fast.
+- Keep the current random object, dice or cards, as the primary object on screen.
+- Make the roll/draw feel physical, but keep interaction fast.
 - Use a restrained palette: black surface, white dice, one cool accent.
 - Show enough result context without turning the page into a dashboard.
 - Preserve real randomness behavior: repeated results can happen, predictable patterns should not.

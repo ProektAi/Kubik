@@ -15,6 +15,11 @@
   --radius: 16px;
   --radius-tight: 10px;
   --die-size: clamp(74px, 16vw, 128px);
+  --card-width: clamp(78px, 20vw, 138px);
+  --card-height: calc(var(--card-width) * 1.42);
+  --suit-red: oklch(0.58 0.19 27);
+  --suit-black: oklch(0.12 0 0);
+  --tarot-accent: oklch(0.78 0.12 198);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   font-family:
@@ -64,7 +69,7 @@ button {
   width: min(1120px, 100%);
   min-height: min(780px, calc(100dvh - 48px));
   display: grid;
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: auto auto 1fr;
   gap: clamp(18px, 3vw, 32px);
   padding: clamp(18px, 4vw, 42px);
   border: 1px solid var(--line);
@@ -103,6 +108,45 @@ h1 {
   text-wrap: balance;
 }
 
+.mode-tabs {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(360px, 100%);
+  min-height: 44px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: oklch(0.075 0 0);
+}
+
+.mode-tab {
+  min-width: 0;
+  cursor: pointer;
+  border-radius: 999px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 0.92rem;
+  font-weight: 760;
+  transition:
+    color 160ms var(--ease-out),
+    background 160ms var(--ease-out),
+    transform 120ms var(--ease-out);
+}
+
+.mode-tab:hover {
+  color: var(--ink);
+}
+
+.mode-tab:active,
+.segment-button:active {
+  transform: scale(0.97);
+}
+
+.mode-tab.is-active {
+  color: oklch(0.05 0 0);
+  background: linear-gradient(180deg, oklch(0.98 0 0), oklch(0.8 0.01 205));
+}
+
 .rng-state {
   display: inline-flex;
   align-items: center;
@@ -128,6 +172,17 @@ h1 {
   animation: pulse-dot 680ms var(--ease-out) infinite;
 }
 
+.game-view {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  gap: clamp(18px, 3vw, 32px);
+}
+
+.game-view[hidden] {
+  display: none;
+}
+
 .dice-stage {
   min-height: 290px;
   display: grid;
@@ -146,6 +201,135 @@ h1 {
   flex-wrap: wrap;
   gap: clamp(18px, 3vw, 34px);
   padding: 18px 0;
+}
+
+.card-stage {
+  min-height: 300px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--radius);
+  perspective: 900px;
+}
+
+.card-field {
+  width: 100%;
+  min-height: calc(var(--card-height) + 42px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 3vw, 28px);
+  padding: 18px 0;
+}
+
+.draw-card {
+  --tilt: 0deg;
+  --suit-color: var(--suit-black);
+  position: relative;
+  width: var(--card-width);
+  height: var(--card-height);
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 6px;
+  padding: clamp(9px, 1.7vw, 14px);
+  overflow: hidden;
+  border: 1px solid oklch(0.82 0.01 200);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 30% 18%, oklch(1 0 0), oklch(0.9 0.008 210) 72%),
+    oklch(0.97 0 0);
+  box-shadow:
+    0 20px 42px oklch(0 0 0 / 0.42),
+    inset 0 1px 0 oklch(1 0 0 / 0.78);
+  color: var(--suit-black);
+  transform: translateY(0) rotate(var(--tilt));
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.draw-card.is-entering {
+  animation: card-land 420ms var(--ease-out);
+}
+
+.draw-card.is-red {
+  --suit-color: var(--suit-red);
+}
+
+.draw-card.is-tarot {
+  border-color: oklch(0.38 0.055 210);
+  background:
+    linear-gradient(160deg, oklch(0.18 0.025 220), oklch(0.075 0.015 220)),
+    oklch(0.1 0.02 220);
+  color: var(--ink);
+  box-shadow:
+    0 20px 46px oklch(0 0 0 / 0.5),
+    inset 0 0 0 1px oklch(0.88 0.08 198 / 0.08);
+}
+
+.draw-card.is-tarot::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 1px solid oklch(0.78 0.12 198 / 0.36);
+  border-radius: 9px;
+  pointer-events: none;
+}
+
+.card-corner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: start;
+  gap: 1px;
+  color: var(--suit-color);
+  font-weight: 850;
+  line-height: 1;
+}
+
+.card-rank {
+  font-size: 1.32rem;
+}
+
+.card-suit {
+  font-size: 1.22rem;
+}
+
+.draw-card.is-tarot .card-corner {
+  color: var(--tarot-accent);
+}
+
+.card-center {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  color: var(--suit-color);
+  font-size: 3.4rem;
+  font-weight: 820;
+  line-height: 1;
+}
+
+.draw-card.is-tarot .card-center {
+  color: var(--tarot-accent);
+  font-size: 3rem;
+}
+
+.card-name {
+  position: relative;
+  z-index: 1;
+  min-height: 2.35em;
+  display: flex;
+  align-items: flex-end;
+  color: oklch(0.16 0 0);
+  font-size: 0.76rem;
+  font-weight: 780;
+  line-height: 1.16;
+  text-wrap: balance;
+}
+
+.draw-card.is-tarot .card-name {
+  color: oklch(0.9 0.02 205);
 }
 
 .die-wrap {
@@ -280,12 +464,21 @@ h1 {
   gap: 14px;
 }
 
+.card-control-deck {
+  grid-template-columns:
+    minmax(280px, 1.15fr)
+    minmax(130px, 0.45fr)
+    minmax(180px, 0.7fr)
+    minmax(260px, 1fr);
+}
+
 .count-control {
   display: grid;
   gap: 9px;
 }
 
-.count-control label {
+.count-control label,
+.field-label {
   color: var(--ink);
   font-size: 0.92rem;
   font-weight: 700;
@@ -301,23 +494,57 @@ h1 {
   background: oklch(0.075 0 0);
 }
 
+.segmented-control {
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tight);
+  background: oklch(0.075 0 0);
+}
+
+.segmented-control.compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .step-button,
-.count-input {
+.count-input,
+.segment-button {
   min-width: 0;
   color: var(--ink);
   background: transparent;
 }
 
-.step-button {
+.step-button,
+.segment-button {
   cursor: pointer;
   font-size: 1.28rem;
   transition:
+    color 160ms var(--ease-out),
     background 160ms var(--ease-out),
     transform 120ms var(--ease-out);
 }
 
-.step-button:hover {
+.segment-button {
+  padding: 0 12px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 760;
+}
+
+.segment-button + .segment-button {
+  border-left: 1px solid var(--line);
+}
+
+.step-button:hover,
+.segment-button:hover {
   background: oklch(0.17 0 0);
+}
+
+.segment-button.is-active {
+  color: oklch(0.05 0 0);
+  background: linear-gradient(180deg, oklch(0.98 0 0), oklch(0.78 0.012 205));
 }
 
 .step-button:active,
@@ -344,7 +571,9 @@ h1 {
 
 .count-input:focus-visible,
 .roll-button:focus-visible,
-.step-button:focus-visible {
+.step-button:focus-visible,
+.mode-tab:focus-visible,
+.segment-button:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 3px;
 }
@@ -381,6 +610,10 @@ h1 {
   background: oklch(0.075 0 0);
 }
 
+.card-result-panel {
+  grid-template-columns: 0.72fr 1.28fr;
+}
+
 .result-panel > div {
   display: grid;
   align-content: center;
@@ -399,6 +632,13 @@ h1 {
   line-height: 1.15;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.card-result-panel strong {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .history-strip {
@@ -460,6 +700,21 @@ h1 {
   }
 }
 
+@keyframes card-land {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -28px, 34px) rotate(calc(var(--tilt) - 8deg));
+  }
+  62% {
+    opacity: 1;
+    transform: translate3d(0, 5px, 0) rotate(calc(var(--tilt) + 1deg));
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(var(--tilt));
+  }
+}
+
 @keyframes pulse-dot {
   0%,
   100% {
@@ -469,6 +724,17 @@ h1 {
   50% {
     opacity: 0.52;
     transform: scale(0.82);
+  }
+}
+
+@media (max-width: 1000px) {
+  .card-control-deck {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .card-control-deck .roll-button,
+  .card-result-panel {
+    grid-column: span 2;
   }
 }
 
@@ -490,6 +756,11 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .card-control-deck .roll-button,
+  .card-result-panel {
+    grid-column: auto;
+  }
+
   .result-panel {
     grid-template-columns: 1fr 1.15fr;
   }
@@ -498,6 +769,7 @@ h1 {
 @media (max-width: 520px) {
   :root {
     --die-size: clamp(62px, 27vw, 96px);
+    --card-width: clamp(76px, 25vw, 96px);
   }
 
   .hero-panel {
@@ -515,6 +787,34 @@ h1 {
 
   .dice-stage {
     min-height: 260px;
+  }
+
+  .card-stage {
+    min-height: 270px;
+  }
+
+  .card-field {
+    gap: 10px;
+  }
+
+  .card-name {
+    font-size: 0.68rem;
+  }
+
+  .card-rank {
+    font-size: 1.08rem;
+  }
+
+  .card-suit {
+    font-size: 1rem;
+  }
+
+  .card-center {
+    font-size: 2.36rem;
+  }
+
+  .draw-card.is-tarot .card-center {
+    font-size: 2.08rem;
   }
 
   .history-strip {

@@ -9,6 +9,18 @@ const comboResult = document.querySelector("#combo-result");
 const historyList = document.querySelector("#history-list");
 const rollState = document.querySelector("#roll-state");
 const appPanel = document.querySelector(".hero-panel");
+const modeButtons = [...document.querySelectorAll(".mode-tab")];
+const gameViews = {
+  dice: document.querySelector("#dice-view"),
+  cards: document.querySelector("#cards-view"),
+};
+const cardField = document.querySelector("#card-field");
+const deckButtons = [...document.querySelectorAll("[data-deck]")];
+const cardCountButtons = [...document.querySelectorAll("[data-card-count]")];
+const drawButton = document.querySelector("#draw-button");
+const deckResult = document.querySelector("#deck-result");
+const cardResult = document.querySelector("#card-result");
+const cardHistoryList = document.querySelector("#card-history-list");
 
 const FACE_PIPS = {
   1: ["cc"],
@@ -32,11 +44,109 @@ const MAX_DICE = 12;
 const MIN_DICE = 1;
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
+const PLAYING_SUITS = [
+  { key: "spades", name: "пик", symbol: "♠", tone: "black" },
+  { key: "hearts", name: "червей", symbol: "♥", tone: "red" },
+  { key: "diamonds", name: "бубен", symbol: "♦", tone: "red" },
+  { key: "clubs", name: "треф", symbol: "♣", tone: "black" },
+];
+
+const PLAYING_RANKS_36 = [
+  { short: "6", name: "Шестерка" },
+  { short: "7", name: "Семерка" },
+  { short: "8", name: "Восьмерка" },
+  { short: "9", name: "Девятка" },
+  { short: "10", name: "Десятка" },
+  { short: "В", name: "Валет" },
+  { short: "Д", name: "Дама" },
+  { short: "К", name: "Король" },
+  { short: "Т", name: "Туз" },
+];
+
+const PLAYING_RANKS_52 = [
+  { short: "2", name: "Двойка" },
+  { short: "3", name: "Тройка" },
+  { short: "4", name: "Четверка" },
+  { short: "5", name: "Пятерка" },
+  ...PLAYING_RANKS_36,
+];
+
+const TAROT_MAJOR = [
+  "Шут",
+  "Маг",
+  "Верховная жрица",
+  "Императрица",
+  "Император",
+  "Иерофант",
+  "Влюбленные",
+  "Колесница",
+  "Сила",
+  "Отшельник",
+  "Колесо фортуны",
+  "Справедливость",
+  "Повешенный",
+  "Смерть",
+  "Умеренность",
+  "Дьявол",
+  "Башня",
+  "Звезда",
+  "Луна",
+  "Солнце",
+  "Суд",
+  "Мир",
+];
+
+const TAROT_MINOR_SUITS = [
+  { key: "wands", name: "Жезлов", symbol: "✦" },
+  { key: "cups", name: "Кубков", symbol: "●" },
+  { key: "swords", name: "Мечей", symbol: "▲" },
+  { key: "pentacles", name: "Пентаклей", symbol: "◆" },
+];
+
+const TAROT_RANKS = [
+  { short: "Т", name: "Туз" },
+  { short: "2", name: "Двойка" },
+  { short: "3", name: "Тройка" },
+  { short: "4", name: "Четверка" },
+  { short: "5", name: "Пятерка" },
+  { short: "6", name: "Шестерка" },
+  { short: "7", name: "Семерка" },
+  { short: "8", name: "Восьмерка" },
+  { short: "9", name: "Девятка" },
+  { short: "10", name: "Десятка" },
+  { short: "Пж", name: "Паж" },
+  { short: "Рц", name: "Рыцарь" },
+  { short: "Кв", name: "Королева" },
+  { short: "Кр", name: "Король" },
+];
+
+const DECKS = {
+  playing36: {
+    label: "36 карт",
+    build: () => buildPlayingDeck(PLAYING_RANKS_36),
+  },
+  playing52: {
+    label: "52 карты",
+    build: () => buildPlayingDeck(PLAYING_RANKS_52),
+  },
+  tarot: {
+    label: "Таро",
+    build: buildTarotDeck,
+  },
+};
+
 let diceCount = 2;
 let currentValues = [1, 6];
 let history = [];
 let rolling = false;
 let rollCounter = 0;
+let activeMode = "dice";
+let cardDeckKey = "playing36";
+let cardCount = 2;
+let currentCards = [];
+let cardHistory = [];
+let drawingCards = false;
+let drawCounter = 0;
 
 class DiceRng {
   constructor() {
@@ -139,6 +249,72 @@ class DiceRng {
 
 const rng = new DiceRng();
 
+function buildPlayingDeck(ranks) {
+  return ranks.flatMap((rank) =>
+    PLAYING_SUITS.map((suit) => ({
+      id: `${rank.short}-${suit.key}`,
+      type: "playing",
+      rank: rank.short,
+      symbol: suit.symbol,
+      name: `${rank.name} ${suit.name}`,
+      tone: suit.tone,
+    }))
+  );
+}
+
+function buildTarotDeck() {
+  const majors = TAROT_MAJOR.map((name, index) => ({
+    id: `major-${index}`,
+    type: "tarot",
+    rank: index === 0 ? "0" : String(index),
+    symbol: "✦",
+    name,
+    tone: "tarot",
+    arcana: "Старший аркан",
+  }));
+
+  const minors = TAROT_MINOR_SUITS.flatMap((suit) =>
+    TAROT_RANKS.map((rank) => ({
+      id: `${rank.short}-${suit.key}`,
+      type: "tarot",
+      rank: rank.short,
+      symbol: suit.symbol,
+      name: `${rank.name} ${suit.name}`,
+      tone: "tarot",
+      arcana: "Младший аркан",
+    }))
+  );
+
+  return [...majors, ...minors];
+}
+
+function hashString(value) {
+  let hash = 0x811c9dc5;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+
+  return hash >>> 0;
+}
+
+function sampleCards(deckKey, count) {
+  const deck = DECKS[deckKey].build();
+  const draw = [];
+
+  for (let index = 0; index < count; index += 1) {
+    const cardIndex = rng.range(0, deck.length - 1);
+    const [card] = deck.splice(cardIndex, 1);
+    draw.push({
+      ...card,
+      tilt: rng.range(-7, 7),
+    });
+  }
+
+  return draw;
+}
+
 function clampDiceCount(value) {
   const parsed = Number.parseInt(value, 10);
 
@@ -228,6 +404,114 @@ function addHistory(values) {
   });
 }
 
+function setPressedState(buttons, attribute, value) {
+  buttons.forEach((button) => {
+    const isActive = button.dataset[attribute] === String(value);
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+}
+
+function setMode(mode) {
+  if (rolling || drawingCards || !gameViews[mode]) {
+    return;
+  }
+
+  activeMode = mode;
+  modeButtons.forEach((button) => {
+    const isActive = button.dataset.mode === mode;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+
+  Object.entries(gameViews).forEach(([key, view]) => {
+    view.hidden = key !== mode;
+    view.classList.toggle("is-active", key === mode);
+  });
+
+  rollState.textContent = "Готово";
+}
+
+function buildCard(card, index, withAnimation = false) {
+  const element = document.createElement("article");
+  const isRed = card.tone === "red";
+  const isTarot = card.type === "tarot";
+
+  element.className = `draw-card${isRed ? " is-red" : ""}${isTarot ? " is-tarot" : ""}${withAnimation ? " is-entering" : ""}`;
+  element.style.setProperty("--tilt", `${card.tilt}deg`);
+  element.style.animationDelay = withAnimation && !prefersReducedMotion.matches ? `${index * 70}ms` : "0ms";
+  element.setAttribute("aria-label", card.name);
+
+  const corner = document.createElement("div");
+  corner.className = "card-corner";
+  corner.innerHTML = `<span class="card-rank">${card.rank}</span><span class="card-suit">${card.symbol}</span>`;
+
+  const center = document.createElement("div");
+  center.className = "card-center";
+  center.textContent = card.symbol;
+
+  const name = document.createElement("div");
+  name.className = "card-name";
+  name.textContent = isTarot ? `${card.name}` : card.name;
+
+  element.append(corner, center, name);
+  return element;
+}
+
+function renderCards(withAnimation = false) {
+  cardField.innerHTML = "";
+  currentCards.forEach((card, index) => {
+    cardField.appendChild(buildCard(card, index, withAnimation));
+  });
+  updateCardResults(currentCards);
+}
+
+function updateCardResults(cards) {
+  deckResult.textContent = DECKS[cardDeckKey].label;
+  cardResult.textContent = cards.map((card) => card.name).join(", ");
+}
+
+function addCardHistory(cards) {
+  cardHistory.unshift({
+    deck: DECKS[cardDeckKey].label,
+    combo: cards.map((card) => card.name).join(" / "),
+  });
+  cardHistory = cardHistory.slice(0, 8);
+
+  cardHistoryList.innerHTML = "";
+  cardHistory.forEach((entry) => {
+    const item = document.createElement("li");
+    item.textContent = `${entry.deck}: ${entry.combo}`;
+    cardHistoryList.appendChild(item);
+  });
+}
+
+function setCardDeck(deckKey) {
+  if (!DECKS[deckKey] || drawingCards) {
+    return;
+  }
+
+  cardDeckKey = deckKey;
+  setPressedState(deckButtons, "deck", deckKey);
+  rng.stir(Date.now() ^ hashString(deckKey));
+  currentCards = sampleCards(cardDeckKey, cardCount);
+  renderCards(false);
+}
+
+function setCardCount(value) {
+  const parsed = Number.parseInt(value, 10);
+
+  if (![2, 3].includes(parsed) || drawingCards) {
+    return;
+  }
+
+  cardCount = parsed;
+  setPressedState(cardCountButtons, "cardCount", cardCount);
+  rng.stir(Date.now() ^ cardCount);
+  currentCards = sampleCards(cardDeckKey, cardCount);
+  renderCards(false);
+}
+
 function rollDice() {
   if (rolling) {
     return;
@@ -274,6 +558,32 @@ function rollDice() {
   }, duration + 130);
 }
 
+function drawCards() {
+  if (drawingCards) {
+    return;
+  }
+
+  drawingCards = true;
+  drawCounter += 1;
+  rng.stir(Date.now() ^ drawCounter ^ cardCount ^ hashString(cardDeckKey));
+
+  const duration = prefersReducedMotion.matches ? 0 : rng.range(360, 580);
+  currentCards = sampleCards(cardDeckKey, cardCount);
+
+  appPanel.classList.add("is-rolling");
+  drawButton.disabled = true;
+  rollState.textContent = "Карты";
+  renderCards(true);
+
+  window.setTimeout(() => {
+    addCardHistory(currentCards);
+    appPanel.classList.remove("is-rolling");
+    drawButton.disabled = false;
+    rollState.textContent = "Готово";
+    drawingCards = false;
+  }, duration + 180);
+}
+
 function stirFromEvent(event) {
   const pointer = "clientX" in event ? (event.clientX << 16) ^ event.clientY : 0;
   rng.stir(pointer ^ Date.now() ^ Math.floor(performance.now() * 1000));
@@ -289,6 +599,16 @@ countInput.addEventListener("input", () => {
   }
 });
 rollButton.addEventListener("click", rollDice);
+drawButton.addEventListener("click", drawCards);
+modeButtons.forEach((button) => {
+  button.addEventListener("click", () => setMode(button.dataset.mode));
+});
+deckButtons.forEach((button) => {
+  button.addEventListener("click", () => setCardDeck(button.dataset.deck));
+});
+cardCountButtons.forEach((button) => {
+  button.addEventListener("click", () => setCardCount(button.dataset.cardCount));
+});
 
 window.addEventListener("pointermove", stirFromEvent, { passive: true });
 window.addEventListener("pointerdown", stirFromEvent, { passive: true });
@@ -301,3 +621,5 @@ if ("serviceWorker" in navigator) {
 }
 
 renderDice();
+currentCards = sampleCards(cardDeckKey, cardCount);
+renderCards(false);
