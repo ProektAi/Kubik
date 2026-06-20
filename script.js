@@ -21,6 +21,15 @@ const drawButton = document.querySelector("#draw-button");
 const deckResult = document.querySelector("#deck-result");
 const cardResult = document.querySelector("#card-result");
 const cardHistoryList = document.querySelector("#card-history-list");
+const accessGate = document.querySelector("#access-gate");
+const accessForm = document.querySelector("#access-form");
+const accessCodeInput = document.querySelector("#access-code");
+const accessError = document.querySelector("#access-error");
+const accessButton = document.querySelector(".access-button");
+
+const ACCESS_STORAGE_KEY = "cubik-access-v1";
+const ACCESS_STORAGE_VALUE = "granted";
+const ACCESS_CODE_HASH = "94edf28c6d6da38fd35d7ad53e485307f89fbeaf120485c8d17a43f323deee71";
 
 const FACE_PIPS = {
   1: ["cc"],
@@ -147,6 +156,74 @@ let currentCards = [];
 let cardHistory = [];
 let drawingCards = false;
 let drawCounter = 0;
+
+function readSavedAccess() {
+  try {
+    return localStorage.getItem(ACCESS_STORAGE_KEY) === ACCESS_STORAGE_VALUE;
+  } catch {
+    return false;
+  }
+}
+
+function saveAccess() {
+  try {
+    localStorage.setItem(ACCESS_STORAGE_KEY, ACCESS_STORAGE_VALUE);
+  } catch {}
+}
+
+function unlockAccess() {
+  document.body.classList.remove("is-locked");
+  accessGate?.setAttribute("hidden", "");
+}
+
+async function hashAccessCode(value) {
+  if (!globalThis.crypto?.subtle) {
+    return "";
+  }
+
+  const data = new TextEncoder().encode(value.trim());
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function verifyAccessCode(value) {
+  return (await hashAccessCode(value)) === ACCESS_CODE_HASH;
+}
+
+function initAccessGate() {
+  if (!accessForm || !accessCodeInput) {
+    return;
+  }
+
+  if (readSavedAccess()) {
+    unlockAccess();
+    return;
+  }
+
+  accessCodeInput.focus({ preventScroll: true });
+
+  accessForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    accessButton.disabled = true;
+    accessError.hidden = true;
+
+    const isAllowed = await verifyAccessCode(accessCodeInput.value);
+
+    if (isAllowed) {
+      saveAccess();
+      unlockAccess();
+      accessButton.disabled = false;
+      return;
+    }
+
+    accessButton.disabled = false;
+    accessError.hidden = false;
+    accessCodeInput.value = "";
+    accessCodeInput.focus();
+  });
+}
 
 class DiceRng {
   constructor() {
@@ -616,10 +693,11 @@ window.addEventListener("keydown", stirFromEvent);
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js?v=3").catch(() => {});
+    navigator.serviceWorker.register("./sw.js?v=4").catch(() => {});
   });
 }
 
+initAccessGate();
 renderDice();
 currentCards = sampleCards(cardDeckKey, cardCount);
 renderCards(false);

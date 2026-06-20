@@ -11,6 +11,7 @@ Personal use by the site owner and guests who need a quick, believable dice or c
 ## Product Purpose
 
 Cubik provides a polished dice-rolling and card-drawing tool with clear results, a visible total for dice, separate deck modes for cards, and a randomness implementation that avoids predictable patterns.
+The app includes a lightweight personal access-code gate that remembers approved access on the same browser/device.
 
 ## Brand Personality
 

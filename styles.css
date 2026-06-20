@@ -49,6 +49,14 @@ body {
   color: var(--ink);
 }
 
+body.is-locked .app-shell {
+  display: none;
+}
+
+body:not(.is-locked) .access-gate {
+  display: none;
+}
+
 button,
 input {
   font: inherit;
@@ -63,6 +71,75 @@ button {
   display: grid;
   place-items: center;
   padding: clamp(18px, 4vw, 48px);
+}
+
+.access-gate {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 4vw, 48px);
+}
+
+.access-panel {
+  width: min(440px, 100%);
+  display: grid;
+  gap: 22px;
+  padding: clamp(22px, 5vw, 38px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(145deg, oklch(0.135 0 0), oklch(0.065 0 0) 62%),
+    var(--surface);
+}
+
+.access-title {
+  margin: -12px 0 2px;
+  font-size: 2.3rem;
+}
+
+.access-form {
+  display: grid;
+  gap: 12px;
+}
+
+.access-form label {
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.access-input {
+  min-height: 58px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tight);
+  padding: 0 16px;
+  color: var(--ink);
+  background: oklch(0.075 0 0);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  outline: none;
+}
+
+.access-input::placeholder {
+  color: oklch(0.55 0.012 205);
+}
+
+.access-button {
+  margin-top: 2px;
+}
+
+.access-error {
+  min-height: 1.2em;
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.9rem;
+  font-weight: 720;
+}
+
+.access-error[hidden] {
+  display: none;
 }
 
 .hero-panel {
@@ -570,6 +647,7 @@ h1 {
 }
 
 .count-input:focus-visible,
+.access-input:focus-visible,
 .roll-button:focus-visible,
 .step-button:focus-visible,
 .mode-tab:focus-visible,
