@@ -180,7 +180,9 @@ const DASHA_LEVELS = [
   { key: "prana", label: "Пранадаша" },
 ];
 
+const DICE_RANDOM_ROUNDS = 249;
 const OPTIONAL_DASHA_DEPTHS = ["pratyantar", "sookshma", "prana"];
+const DASHA_RANDOM_ROUNDS = 249;
 
 const FIXED_DASHA_SELECTS = {
   pratyantar: pratyantarSelect,
@@ -202,6 +204,7 @@ let drawingCards = false;
 let drawCounter = 0;
 let currentDashaPath = [];
 let dashaHistory = [];
+let dashaGenerationCounter = 0;
 
 function readSavedAccess() {
   try {
@@ -422,6 +425,30 @@ function hashString(value) {
   return hash >>> 0;
 }
 
+function getDeepDiceValue(dieIndex) {
+  const sides = 6;
+  const limit = Math.floor(0x100000000 / sides) * sides;
+  let value = hashString(`dice|${rollCounter}|${dieIndex}|${diceCount}`);
+
+  for (let round = 0; round < DICE_RANDOM_ROUNDS; round += 1) {
+    const roundSalt = hashString(`dice:${rollCounter}:${dieIndex}:${round}`);
+    value = rng.mix32(
+      value ^
+        rng.randomUint32() ^
+        roundSalt ^
+        Math.floor(performance.now() * 1000) ^
+        Date.now()
+    );
+    rng.stir(value ^ roundSalt ^ round);
+  }
+
+  while (value >= limit) {
+    value = rng.mix32(value ^ rng.randomUint32() ^ hashString(`dice:reject:${dieIndex}`));
+  }
+
+  return (value % sides) + 1;
+}
+
 function sampleCards(deckKey, count) {
   const deck = DECKS[deckKey].build();
   const draw = [];
@@ -448,18 +475,44 @@ function getDashaSequenceFrom(planetKey) {
   ];
 }
 
-function getRandomDashaPlanet(sequence = DASHA_PLANETS) {
-  return sequence[rng.range(0, sequence.length - 1)];
+function getDeepDashaRandomIndex(sequence, levelKey, parentKey) {
+  const length = sequence.length;
+  const limit = Math.floor(0x100000000 / length) * length;
+  let value = hashString(
+    `${levelKey}|${parentKey}|${dashaGenerationCounter}|${sequence.map((planet) => planet.key).join(",")}`
+  );
+
+  for (let round = 0; round < DASHA_RANDOM_ROUNDS; round += 1) {
+    const roundSalt = hashString(`${levelKey}:${parentKey}:${round}:${dashaGenerationCounter}`);
+    value = rng.mix32(
+      value ^
+        rng.randomUint32() ^
+        roundSalt ^
+        Math.floor(performance.now() * 1000) ^
+        Date.now()
+    );
+    rng.stir(value ^ roundSalt ^ round);
+  }
+
+  while (value >= limit) {
+    value = rng.mix32(value ^ rng.randomUint32() ^ hashString(`${levelKey}:reject`));
+  }
+
+  return value % length;
 }
 
-function resolveDashaPlanet(selectElement, sequence) {
+function getRandomDashaPlanet(sequence = DASHA_PLANETS, levelKey = "dasha", parentKey = "root") {
+  return sequence[getDeepDashaRandomIndex(sequence, levelKey, parentKey)];
+}
+
+function resolveDashaPlanet(selectElement, sequence, levelKey, parentKey) {
   const selectedKey = selectElement?.value ?? "auto";
 
   if (selectedKey === "auto") {
-    return getRandomDashaPlanet(sequence);
+    return getRandomDashaPlanet(sequence, levelKey, parentKey);
   }
 
-  return DASHA_PLANET_MAP[selectedKey] ?? getRandomDashaPlanet(sequence);
+  return DASHA_PLANET_MAP[selectedKey] ?? getRandomDashaPlanet(sequence, levelKey, parentKey);
 }
 
 function getSelectedDashaLevelCount() {
@@ -523,7 +576,7 @@ function buildDashaPath() {
   const selectedAntardasha = antardashaSelect?.value ?? "auto";
   const startPlanet =
     selectedMahadasha === "auto"
-      ? getRandomDashaPlanet()
+      ? getRandomDashaPlanet(DASHA_PLANETS, DASHA_LEVELS[0].key, "root")
       : DASHA_PLANET_MAP[selectedMahadasha] ?? DASHA_PLANET_MAP.saturn;
   const levelCount = getSelectedDashaLevelCount();
   const path = [
@@ -537,8 +590,9 @@ function buildDashaPath() {
     const antardashaSequence = getDashaSequenceFrom(startPlanet.key);
     const antardashaPlanet =
       selectedAntardasha === "auto"
-        ? getRandomDashaPlanet(antardashaSequence)
-        : DASHA_PLANET_MAP[selectedAntardasha] ?? getRandomDashaPlanet(antardashaSequence);
+        ? getRandomDashaPlanet(antardashaSequence, DASHA_LEVELS[1].key, startPlanet.key)
+        : DASHA_PLANET_MAP[selectedAntardasha] ??
+          getRandomDashaPlanet(antardashaSequence, DASHA_LEVELS[1].key, startPlanet.key);
 
     path.push({
       level: DASHA_LEVELS[1],
@@ -550,7 +604,12 @@ function buildDashaPath() {
     const parentPlanet = path[path.length - 1].planet;
     const sequence = getDashaSequenceFrom(parentPlanet.key);
     const levelKey = DASHA_LEVELS[path.length].key;
-    const planet = resolveDashaPlanet(FIXED_DASHA_SELECTS[levelKey], sequence);
+    const planet = resolveDashaPlanet(
+      FIXED_DASHA_SELECTS[levelKey],
+      sequence,
+      levelKey,
+      parentPlanet.key
+    );
 
     path.push({
       level: DASHA_LEVELS[path.length],
@@ -786,8 +845,11 @@ function addDashaHistory(path) {
 }
 
 function generateDasha(shouldSaveHistory = true) {
+  dashaGenerationCounter += 1;
   rng.stir(
     Date.now() ^
+      dashaGenerationCounter ^
+      DASHA_RANDOM_ROUNDS ^
       hashString(mahadashaSelect?.value ?? "saturn") ^
       hashString(antardashaSelect?.value ?? "auto") ^
       hashString(pratyantarSelect?.value ?? "auto") ^
@@ -863,7 +925,7 @@ function rollDice() {
   rollCounter += 1;
   rng.stir(Date.now() ^ rollCounter ^ diceCount);
 
-  const values = Array.from({ length: diceCount }, () => rng.die());
+  const values = Array.from({ length: diceCount }, (_, index) => getDeepDiceValue(index));
   const diceWraps = [...diceField.querySelectorAll(".die-wrap")];
   const duration = prefersReducedMotion.matches ? 0 : rng.range(860, 1280);
 
@@ -970,7 +1032,7 @@ window.addEventListener("keydown", stirFromEvent);
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js?v=7").catch(() => {});
+    navigator.serviceWorker.register("./sw.js?v=8").catch(() => {});
   });
 }
 
