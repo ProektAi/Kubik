@@ -25,6 +25,7 @@ const cardHistoryList = document.querySelector("#card-history-list");
 const mahadashaSelect = document.querySelector("#mahadasha-select");
 const dashaDepthInputs = [...document.querySelectorAll("[data-dasha-depth]")];
 const generateDashaButton = document.querySelector("#generate-dasha-button");
+const antardashaSelect = document.querySelector("#antardasha-select");
 const dashaChain = document.querySelector("#dasha-chain");
 const dashaDepthResult = document.querySelector("#dasha-depth-result");
 const dashaResult = document.querySelector("#dasha-result");
@@ -438,6 +439,10 @@ function getDashaSequenceFrom(planetKey) {
   ];
 }
 
+function getRandomDashaPlanet(sequence = DASHA_PLANETS) {
+  return sequence[rng.range(0, sequence.length - 1)];
+}
+
 function getSelectedDashaLevelCount() {
   const checkedDepths = OPTIONAL_DASHA_DEPTHS.filter((depth) => {
     return dashaDepthInputs.some((input) => input.dataset.dashaDepth === depth && input.checked);
@@ -495,8 +500,12 @@ function formatDashaDuration(days) {
 }
 
 function buildDashaPath() {
-  const selectedKey = mahadashaSelect?.value ?? "saturn";
-  const startPlanet = DASHA_PLANET_MAP[selectedKey] ?? DASHA_PLANET_MAP.saturn;
+  const selectedMahadasha = mahadashaSelect?.value ?? "saturn";
+  const selectedAntardasha = antardashaSelect?.value ?? "auto";
+  const startPlanet =
+    selectedMahadasha === "auto"
+      ? getRandomDashaPlanet()
+      : DASHA_PLANET_MAP[selectedMahadasha] ?? DASHA_PLANET_MAP.saturn;
   const levelCount = getSelectedDashaLevelCount();
   const path = [
     {
@@ -505,10 +514,23 @@ function buildDashaPath() {
     },
   ];
 
+  if (levelCount > 1) {
+    const antardashaSequence = getDashaSequenceFrom(startPlanet.key);
+    const antardashaPlanet =
+      selectedAntardasha === "auto"
+        ? getRandomDashaPlanet(antardashaSequence)
+        : DASHA_PLANET_MAP[selectedAntardasha] ?? getRandomDashaPlanet(antardashaSequence);
+
+    path.push({
+      level: DASHA_LEVELS[1],
+      planet: antardashaPlanet,
+    });
+  }
+
   while (path.length < levelCount) {
     const parentPlanet = path[path.length - 1].planet;
     const sequence = getDashaSequenceFrom(parentPlanet.key);
-    const planet = sequence[rng.range(0, sequence.length - 1)];
+    const planet = getRandomDashaPlanet(sequence);
 
     path.push({
       level: DASHA_LEVELS[path.length],
@@ -744,7 +766,12 @@ function addDashaHistory(path) {
 }
 
 function generateDasha(shouldSaveHistory = true) {
-  rng.stir(Date.now() ^ hashString(mahadashaSelect?.value ?? "saturn") ^ getSelectedDashaLevelCount());
+  rng.stir(
+    Date.now() ^
+      hashString(mahadashaSelect?.value ?? "saturn") ^
+      hashString(antardashaSelect?.value ?? "auto") ^
+      getSelectedDashaLevelCount()
+  );
   currentDashaPath = buildDashaPath();
   renderDashaPath(currentDashaPath);
 
@@ -902,6 +929,7 @@ cardCountButtons.forEach((button) => {
   button.addEventListener("click", () => setCardCount(button.dataset.cardCount));
 });
 mahadashaSelect.addEventListener("change", () => generateDasha(false));
+antardashaSelect.addEventListener("change", () => generateDasha(false));
 generateDashaButton.addEventListener("click", () => generateDasha(true));
 dashaDepthInputs.forEach((input) => {
   input.addEventListener("change", () => {
@@ -916,7 +944,7 @@ window.addEventListener("keydown", stirFromEvent);
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js?v=5").catch(() => {});
+    navigator.serviceWorker.register("./sw.js?v=6").catch(() => {});
   });
 }
 
