@@ -26,6 +26,9 @@ const mahadashaSelect = document.querySelector("#mahadasha-select");
 const dashaDepthInputs = [...document.querySelectorAll("[data-dasha-depth]")];
 const generateDashaButton = document.querySelector("#generate-dasha-button");
 const antardashaSelect = document.querySelector("#antardasha-select");
+const pratyantarSelect = document.querySelector("#pratyantar-select");
+const sookshmaSelect = document.querySelector("#sookshma-select");
+const pranaSelect = document.querySelector("#prana-select");
 const dashaChain = document.querySelector("#dasha-chain");
 const dashaDepthResult = document.querySelector("#dasha-depth-result");
 const dashaResult = document.querySelector("#dasha-result");
@@ -178,6 +181,12 @@ const DASHA_LEVELS = [
 ];
 
 const OPTIONAL_DASHA_DEPTHS = ["pratyantar", "sookshma", "prana"];
+
+const FIXED_DASHA_SELECTS = {
+  pratyantar: pratyantarSelect,
+  sookshma: sookshmaSelect,
+  prana: pranaSelect,
+};
 
 let diceCount = 2;
 let currentValues = [1, 6];
@@ -443,6 +452,16 @@ function getRandomDashaPlanet(sequence = DASHA_PLANETS) {
   return sequence[rng.range(0, sequence.length - 1)];
 }
 
+function resolveDashaPlanet(selectElement, sequence) {
+  const selectedKey = selectElement?.value ?? "auto";
+
+  if (selectedKey === "auto") {
+    return getRandomDashaPlanet(sequence);
+  }
+
+  return DASHA_PLANET_MAP[selectedKey] ?? getRandomDashaPlanet(sequence);
+}
+
 function getSelectedDashaLevelCount() {
   const checkedDepths = OPTIONAL_DASHA_DEPTHS.filter((depth) => {
     return dashaDepthInputs.some((input) => input.dataset.dashaDepth === depth && input.checked);
@@ -530,7 +549,8 @@ function buildDashaPath() {
   while (path.length < levelCount) {
     const parentPlanet = path[path.length - 1].planet;
     const sequence = getDashaSequenceFrom(parentPlanet.key);
-    const planet = getRandomDashaPlanet(sequence);
+    const levelKey = DASHA_LEVELS[path.length].key;
+    const planet = resolveDashaPlanet(FIXED_DASHA_SELECTS[levelKey], sequence);
 
     path.push({
       level: DASHA_LEVELS[path.length],
@@ -770,6 +790,9 @@ function generateDasha(shouldSaveHistory = true) {
     Date.now() ^
       hashString(mahadashaSelect?.value ?? "saturn") ^
       hashString(antardashaSelect?.value ?? "auto") ^
+      hashString(pratyantarSelect?.value ?? "auto") ^
+      hashString(sookshmaSelect?.value ?? "auto") ^
+      hashString(pranaSelect?.value ?? "auto") ^
       getSelectedDashaLevelCount()
   );
   currentDashaPath = buildDashaPath();
@@ -930,6 +953,9 @@ cardCountButtons.forEach((button) => {
 });
 mahadashaSelect.addEventListener("change", () => generateDasha(false));
 antardashaSelect.addEventListener("change", () => generateDasha(false));
+Object.values(FIXED_DASHA_SELECTS).forEach((selectElement) => {
+  selectElement.addEventListener("change", () => generateDasha(false));
+});
 generateDashaButton.addEventListener("click", () => generateDasha(true));
 dashaDepthInputs.forEach((input) => {
   input.addEventListener("change", () => {
@@ -944,7 +970,7 @@ window.addEventListener("keydown", stirFromEvent);
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js?v=6").catch(() => {});
+    navigator.serviceWorker.register("./sw.js?v=7").catch(() => {});
   });
 }
 

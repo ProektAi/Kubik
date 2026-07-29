@@ -13,10 +13,10 @@
     <meta name="apple-mobile-web-app-title" content="Cubik" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Cubik | кубики, карты и даши</title>
-    <link rel="manifest" href="manifest.webmanifest?v=6" />
+    <link rel="manifest" href="manifest.webmanifest?v=7" />
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-    <link rel="stylesheet" href="styles.css?v=6" />
+    <link rel="stylesheet" href="styles.css?v=7" />
   </head>
   <body class="is-locked">
     <section class="access-gate" id="access-gate" aria-label="Код доступа">
@@ -216,18 +216,60 @@
 
             <fieldset class="period-options" aria-label="Глубина подпериодов">
               <legend>Подпериоды</legend>
-              <label class="period-toggle">
-                <input type="checkbox" data-dasha-depth="pratyantar" />
-                <span>Пратьянтарадаша</span>
-              </label>
-              <label class="period-toggle">
-                <input type="checkbox" data-dasha-depth="sookshma" />
-                <span>Сукшмадаша</span>
-              </label>
-              <label class="period-toggle">
-                <input type="checkbox" data-dasha-depth="prana" />
-                <span>Пранадаша</span>
-              </label>
+              <div class="period-choice">
+                <label class="period-check">
+                  <input type="checkbox" data-dasha-depth="pratyantar" />
+                  <span>Пратьянтарадаша</span>
+                </label>
+                <select id="pratyantar-select" class="select-input mini-select">
+                  <option value="auto" selected>Авто</option>
+                  <option value="ketu">Кету</option>
+                  <option value="venus">Венера</option>
+                  <option value="sun">Солнце</option>
+                  <option value="moon">Луна</option>
+                  <option value="mars">Марс</option>
+                  <option value="rahu">Раху</option>
+                  <option value="jupiter">Юпитер</option>
+                  <option value="saturn">Сатурн</option>
+                  <option value="mercury">Меркурий</option>
+                </select>
+              </div>
+              <div class="period-choice">
+                <label class="period-check">
+                  <input type="checkbox" data-dasha-depth="sookshma" />
+                  <span>Сукшмадаша</span>
+                </label>
+                <select id="sookshma-select" class="select-input mini-select">
+                  <option value="auto" selected>Авто</option>
+                  <option value="ketu">Кету</option>
+                  <option value="venus">Венера</option>
+                  <option value="sun">Солнце</option>
+                  <option value="moon">Луна</option>
+                  <option value="mars">Марс</option>
+                  <option value="rahu">Раху</option>
+                  <option value="jupiter">Юпитер</option>
+                  <option value="saturn">Сатурн</option>
+                  <option value="mercury">Меркурий</option>
+                </select>
+              </div>
+              <div class="period-choice">
+                <label class="period-check">
+                  <input type="checkbox" data-dasha-depth="prana" />
+                  <span>Пранадаша</span>
+                </label>
+                <select id="prana-select" class="select-input mini-select">
+                  <option value="auto" selected>Авто</option>
+                  <option value="ketu">Кету</option>
+                  <option value="venus">Венера</option>
+                  <option value="sun">Солнце</option>
+                  <option value="moon">Луна</option>
+                  <option value="mars">Марс</option>
+                  <option value="rahu">Раху</option>
+                  <option value="jupiter">Юпитер</option>
+                  <option value="saturn">Сатурн</option>
+                  <option value="mercury">Меркурий</option>
+                </select>
+              </div>
             </fieldset>
 
             <button type="button" class="roll-button" id="generate-dasha-button">
@@ -268,6 +310,6 @@
       </div>
     </template>
 
-    <script src="script.js?v=6"></script>
+    <script src="script.js?v=7"></script>
   </body>
 </html>

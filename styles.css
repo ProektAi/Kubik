@@ -179,9 +179,9 @@ button {
 
 h1 {
   margin: 4px 0 0;
-  font-size: clamp(2.15rem, 5vw, 4.8rem);
+  font-size: 4.25rem;
   line-height: 0.98;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
   text-wrap: balance;
 }
 
@@ -256,6 +256,11 @@ h1 {
   gap: clamp(18px, 3vw, 32px);
 }
 
+#dasha-view {
+  grid-template-rows: auto auto auto;
+  gap: clamp(12px, 2vw, 22px);
+}
+
 .game-view[hidden] {
   display: none;
 }
@@ -300,7 +305,7 @@ h1 {
 }
 
 .dasha-stage {
-  min-height: 190px;
+  min-height: 128px;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -311,22 +316,22 @@ h1 {
   width: 100%;
   display: flex;
   align-items: stretch;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
-  padding: 10px 2px;
+  padding: 6px 2px;
   scrollbar-width: thin;
 }
 
 .dasha-node {
   position: relative;
-  flex: 1 0 104px;
-  min-height: 86px;
+  flex: 1 0 86px;
+  min-height: 64px;
   display: grid;
   align-content: space-between;
-  gap: 7px;
+  gap: 4px;
   border: 1px solid var(--line);
   border-radius: var(--radius-tight);
-  padding: 9px;
+  padding: 7px;
   background:
     linear-gradient(160deg, oklch(0.145 0.018 220), oklch(0.075 0.008 220)),
     oklch(0.095 0 0);
@@ -351,7 +356,7 @@ h1 {
   z-index: 1;
   margin: 0;
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.56rem;
   font-weight: 760;
 }
 
@@ -360,7 +365,7 @@ h1 {
   z-index: 1;
   margin: 0;
   color: var(--ink);
-  font-size: 1.02rem;
+  font-size: 0.84rem;
   line-height: 1.08;
   font-weight: 850;
 }
@@ -621,11 +626,12 @@ h1 {
 
 .dasha-control-deck {
   grid-template-columns:
-    minmax(150px, 0.55fr)
-    minmax(150px, 0.55fr)
-    minmax(330px, 1.25fr)
-    minmax(165px, 0.55fr);
+    minmax(130px, 0.52fr)
+    minmax(130px, 0.52fr)
+    minmax(390px, 1.5fr)
+    minmax(145px, 0.5fr);
   align-items: end;
+  gap: 10px;
 }
 
 .count-control {
@@ -683,7 +689,7 @@ h1 {
   min-width: 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 7px;
   margin: 0;
   padding: 0;
   border: 0;
@@ -697,51 +703,76 @@ h1 {
   font-weight: 700;
 }
 
-.period-toggle {
-  min-height: 52px;
+.period-choice {
+  min-width: 0;
   display: grid;
-  place-items: center;
+  gap: 5px;
   border: 1px solid var(--line);
   border-radius: var(--radius-tight);
-  color: var(--muted);
+  padding: 7px;
   background: oklch(0.075 0 0);
+}
+
+.period-check {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
   cursor: pointer;
   transition:
     color 160ms var(--ease-out),
-    background 160ms var(--ease-out),
-    border-color 160ms var(--ease-out),
     transform 120ms var(--ease-out);
 }
 
-.period-toggle:hover {
+.period-check:hover {
   color: var(--ink);
-  background: oklch(0.17 0 0);
 }
 
-.period-toggle:active {
+.period-check:active {
   transform: scale(0.98);
 }
 
-.period-toggle input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
+.period-check input {
+  width: 13px;
+  height: 13px;
+  accent-color: var(--primary);
 }
 
-.period-toggle span {
-  padding: 0 8px;
+.period-check span {
+  min-width: 0;
   overflow: hidden;
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 780;
-  text-align: center;
   line-height: 1.1;
   overflow-wrap: anywhere;
 }
 
-.period-toggle:has(input:checked) {
+.period-choice:has(input:checked) {
   border-color: oklch(0.72 0.12 198 / 0.65);
-  color: oklch(0.05 0 0);
-  background: linear-gradient(180deg, oklch(0.98 0 0), oklch(0.78 0.012 205));
+  background: oklch(0.105 0.012 215);
+}
+
+.dasha-control-deck .select-input {
+  min-height: 38px;
+  padding-left: 11px;
+  font-size: 0.86rem;
+}
+
+.dasha-control-deck .mini-select {
+  min-height: 32px;
+  padding-left: 8px;
+  padding-right: 28px;
+  font-size: 0.78rem;
+  background-position:
+    calc(100% - 17px) 50%,
+    calc(100% - 11px) 50%,
+    0 0;
+}
+
+.dasha-control-deck .roll-button {
+  min-height: 38px;
+  font-size: 0.9rem;
 }
 
 .segmented-control {
@@ -826,7 +857,7 @@ h1 {
 .step-button:focus-visible,
 .mode-tab:focus-visible,
 .segment-button:focus-visible,
-.period-toggle:has(input:focus-visible) {
+.period-choice:has(input:focus-visible) {
   outline: 2px solid var(--primary);
   outline-offset: 3px;
 }
@@ -1015,6 +1046,10 @@ h1 {
     min-height: calc(100dvh - 24px);
   }
 
+  h1 {
+    font-size: 3.1rem;
+  }
+
   .topbar {
     align-items: flex-start;
   }
@@ -1051,16 +1086,58 @@ h1 {
   }
 
   .hero-panel {
-    padding: 16px;
-    gap: 18px;
+    min-height: auto;
+    padding: 12px;
+    gap: 12px;
   }
 
   .topbar {
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .topbar > div:first-child {
+    min-width: 0;
+  }
+
+  .kicker,
+  .history-label,
+  .result-label,
+  .control-note {
+    font-size: 0.68rem;
   }
 
   h1 {
-    font-size: 2.4rem;
+    margin-top: 1px;
+    font-size: 1.65rem;
+    line-height: 1.03;
+  }
+
+  .rng-state {
+    gap: 6px;
+    min-height: 28px;
+    padding: 0 9px;
+    font-size: 0.72rem;
+  }
+
+  .rng-dot {
+    width: 7px;
+    height: 7px;
+    box-shadow: 0 0 0 3px oklch(0.72 0.12 198 / 0.13);
+  }
+
+  .mode-tabs {
+    min-height: 36px;
+    padding: 3px;
+  }
+
+  .mode-tab {
+    font-size: 0.78rem;
+  }
+
+  .game-view {
+    gap: 12px;
   }
 
   .dice-stage {
@@ -1072,25 +1149,117 @@ h1 {
   }
 
   .dasha-stage {
-    min-height: 170px;
+    min-height: 92px;
   }
 
   .dasha-chain {
     align-items: stretch;
     justify-content: flex-start;
+    gap: 5px;
+    padding: 4px 1px;
   }
 
   .dasha-node {
-    flex-basis: 104px;
-    min-height: 86px;
+    flex-basis: 74px;
+    min-height: 54px;
+    gap: 3px;
+    padding: 6px;
+    border-radius: 8px;
+  }
+
+  .dasha-node-label,
+  .dasha-node-meta {
+    font-size: 0.5rem;
   }
 
   .dasha-node-planet {
-    font-size: 1rem;
+    font-size: 0.74rem;
+  }
+
+  .dasha-control-deck {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .dasha-control-deck .roll-button,
+  .dasha-result-panel,
+  .period-options {
+    grid-column: 1 / -1;
+  }
+
+  .count-control {
+    gap: 5px;
+  }
+
+  .count-control label,
+  .field-label {
+    font-size: 0.78rem;
   }
 
   .period-options {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .period-options legend {
+    grid-column: 1 / -1;
+    margin-bottom: 5px;
+    font-size: 0.78rem;
+  }
+
+  .period-choice {
+    gap: 4px;
+    padding: 5px;
+    border-radius: 8px;
+  }
+
+  .period-check {
+    gap: 4px;
+  }
+
+  .period-check input {
+    width: 12px;
+    height: 12px;
+  }
+
+  .period-check span {
+    font-size: 0.58rem;
+  }
+
+  .dasha-control-deck .select-input {
+    min-height: 34px;
+    padding-left: 9px;
+    padding-right: 30px;
+    font-size: 0.78rem;
+  }
+
+  .dasha-control-deck .mini-select {
+    min-height: 30px;
+    padding-left: 7px;
+    padding-right: 24px;
+    font-size: 0.72rem;
+    background-position:
+      calc(100% - 15px) 50%,
+      calc(100% - 9px) 50%,
+      0 0;
+  }
+
+  .dasha-control-deck .roll-button {
+    min-height: 36px;
+    font-size: 0.82rem;
+  }
+
+  .result-panel > div {
+    padding: 8px 11px;
+  }
+
+  .result-panel strong {
+    font-size: 0.9rem;
+  }
+
+  .dasha-result-panel strong {
+    font-size: 0.88rem;
+    line-height: 1.08;
   }
 
   .card-field {
