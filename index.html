@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Cubik, личный сайт для премиального броска кубиков и карт."
+      content="Cubik, личный сайт для премиального броска кубиков, карт и даш."
     />
     <meta name="theme-color" content="#050505" />
     <meta name="application-name" content="Cubik" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Cubik" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>Cubik | кубики и карты</title>
-    <link rel="manifest" href="manifest.webmanifest?v=4" />
+    <title>Cubik | кубики, карты и даши</title>
+    <link rel="manifest" href="manifest.webmanifest?v=5" />
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-    <link rel="stylesheet" href="styles.css?v=4" />
+    <link rel="stylesheet" href="styles.css?v=5" />
   </head>
   <body class="is-locked">
     <section class="access-gate" id="access-gate" aria-label="Код доступа">
@@ -48,7 +48,7 @@
         <header class="topbar">
           <div>
             <p class="kicker">CUBIK</p>
-            <h1 id="app-title">Кубики и карты</h1>
+            <h1 id="app-title">Кубики, карты и даши</h1>
           </div>
           <div class="rng-state" aria-live="polite">
             <span class="rng-dot" aria-hidden="true"></span>
@@ -62,6 +62,9 @@
           </button>
           <button type="button" class="mode-tab" data-mode="cards" aria-pressed="false">
             Карты
+          </button>
+          <button type="button" class="mode-tab" data-mode="dasha" aria-pressed="false">
+            Даши
           </button>
         </nav>
 
@@ -170,6 +173,66 @@
             <ol id="card-history-list"></ol>
           </aside>
         </section>
+
+        <section class="game-view" id="dasha-view" aria-label="Генератор антардаш" hidden>
+          <div class="dasha-stage" aria-live="polite">
+            <div class="dasha-chain" id="dasha-chain"></div>
+          </div>
+
+          <section class="control-deck dasha-control-deck" aria-label="Панель генератора даш">
+            <div class="count-control">
+              <label for="mahadasha-select">Махадаша</label>
+              <select id="mahadasha-select" class="select-input">
+                <option value="saturn" selected>Сатурн</option>
+                <option value="ketu">Кету</option>
+                <option value="venus">Венера</option>
+                <option value="sun">Солнце</option>
+                <option value="moon">Луна</option>
+                <option value="mars">Марс</option>
+                <option value="rahu">Раху</option>
+                <option value="jupiter">Юпитер</option>
+                <option value="mercury">Меркурий</option>
+              </select>
+              <p class="control-note">Вимшоттари</p>
+            </div>
+
+            <fieldset class="period-options" aria-label="Глубина подпериодов">
+              <legend>Подпериоды</legend>
+              <label class="period-toggle">
+                <input type="checkbox" data-dasha-depth="pratyantar" />
+                <span>Пратьянтарадаша</span>
+              </label>
+              <label class="period-toggle">
+                <input type="checkbox" data-dasha-depth="sookshma" />
+                <span>Сукшмадаша</span>
+              </label>
+              <label class="period-toggle">
+                <input type="checkbox" data-dasha-depth="prana" />
+                <span>Пранадаша</span>
+              </label>
+            </fieldset>
+
+            <button type="button" class="roll-button" id="generate-dasha-button">
+              Генерировать
+            </button>
+
+            <div class="result-panel dasha-result-panel">
+              <div>
+                <span class="result-label">Глубина</span>
+                <strong id="dasha-depth-result">Антардаша</strong>
+              </div>
+              <div>
+                <span class="result-label">Итог</span>
+                <strong id="dasha-result">Махадаша Сатурна / Антардаша Венеры</strong>
+              </div>
+            </div>
+          </section>
+
+          <aside class="history-strip" aria-label="История генератора даш">
+            <span class="history-label">История</span>
+            <ol id="dasha-history-list"></ol>
+          </aside>
+        </section>
       </section>
     </main>
 
@@ -187,6 +250,6 @@
       </div>
     </template>
 
-    <script src="script.js?v=4"></script>
+    <script src="script.js?v=5"></script>
   </body>
 </html>

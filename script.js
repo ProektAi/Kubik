@@ -13,6 +13,7 @@ const modeButtons = [...document.querySelectorAll(".mode-tab")];
 const gameViews = {
   dice: document.querySelector("#dice-view"),
   cards: document.querySelector("#cards-view"),
+  dasha: document.querySelector("#dasha-view"),
 };
 const cardField = document.querySelector("#card-field");
 const deckButtons = [...document.querySelectorAll("[data-deck]")];
@@ -21,6 +22,13 @@ const drawButton = document.querySelector("#draw-button");
 const deckResult = document.querySelector("#deck-result");
 const cardResult = document.querySelector("#card-result");
 const cardHistoryList = document.querySelector("#card-history-list");
+const mahadashaSelect = document.querySelector("#mahadasha-select");
+const dashaDepthInputs = [...document.querySelectorAll("[data-dasha-depth]")];
+const generateDashaButton = document.querySelector("#generate-dasha-button");
+const dashaChain = document.querySelector("#dasha-chain");
+const dashaDepthResult = document.querySelector("#dasha-depth-result");
+const dashaResult = document.querySelector("#dasha-result");
+const dashaHistoryList = document.querySelector("#dasha-history-list");
 const accessGate = document.querySelector("#access-gate");
 const accessForm = document.querySelector("#access-form");
 const accessCodeInput = document.querySelector("#access-code");
@@ -144,6 +152,32 @@ const DECKS = {
   },
 };
 
+const DASHA_PLANETS = [
+  { key: "ketu", name: "Кету", genitive: "Кету", years: 7 },
+  { key: "venus", name: "Венера", genitive: "Венеры", years: 20 },
+  { key: "sun", name: "Солнце", genitive: "Солнца", years: 6 },
+  { key: "moon", name: "Луна", genitive: "Луны", years: 10 },
+  { key: "mars", name: "Марс", genitive: "Марса", years: 7 },
+  { key: "rahu", name: "Раху", genitive: "Раху", years: 18 },
+  { key: "jupiter", name: "Юпитер", genitive: "Юпитера", years: 16 },
+  { key: "saturn", name: "Сатурн", genitive: "Сатурна", years: 19 },
+  { key: "mercury", name: "Меркурий", genitive: "Меркурия", years: 17 },
+];
+
+const DASHA_PLANET_MAP = Object.fromEntries(
+  DASHA_PLANETS.map((planet) => [planet.key, planet])
+);
+
+const DASHA_LEVELS = [
+  { key: "mahadasha", label: "Махадаша" },
+  { key: "antardasha", label: "Антрадаша" },
+  { key: "pratyantar", label: "Пратьянтарадаша" },
+  { key: "sookshma", label: "Сукшмадаша" },
+  { key: "prana", label: "Пранадаша" },
+];
+
+const OPTIONAL_DASHA_DEPTHS = ["pratyantar", "sookshma", "prana"];
+
 let diceCount = 2;
 let currentValues = [1, 6];
 let history = [];
@@ -156,6 +190,8 @@ let currentCards = [];
 let cardHistory = [];
 let drawingCards = false;
 let drawCounter = 0;
+let currentDashaPath = [];
+let dashaHistory = [];
 
 function readSavedAccess() {
   try {
@@ -392,6 +428,106 @@ function sampleCards(deckKey, count) {
   return draw;
 }
 
+function getDashaSequenceFrom(planetKey) {
+  const startIndex = DASHA_PLANETS.findIndex((planet) => planet.key === planetKey);
+  const safeIndex = startIndex >= 0 ? startIndex : 0;
+
+  return [
+    ...DASHA_PLANETS.slice(safeIndex),
+    ...DASHA_PLANETS.slice(0, safeIndex),
+  ];
+}
+
+function getSelectedDashaLevelCount() {
+  const checkedDepths = OPTIONAL_DASHA_DEPTHS.filter((depth) => {
+    return dashaDepthInputs.some((input) => input.dataset.dashaDepth === depth && input.checked);
+  });
+
+  return 2 + checkedDepths.length;
+}
+
+function calculateDashaDurationDays(path, levelIndex) {
+  if (levelIndex === 0) {
+    return path[0].planet.years * 360;
+  }
+
+  const product = path
+    .slice(0, levelIndex + 1)
+    .reduce((total, item) => total * item.planet.years, 1);
+
+  return (360 * product) / Math.pow(120, levelIndex);
+}
+
+function formatDashaDuration(days) {
+  if (days >= 30) {
+    const totalDays = Math.round(days);
+    const years = Math.floor(totalDays / 360);
+    const months = Math.floor((totalDays % 360) / 30);
+    const restDays = totalDays % 30;
+    const parts = [];
+
+    if (years > 0) {
+      parts.push(`${years} г.`);
+    }
+
+    if (months > 0) {
+      parts.push(`${months} мес.`);
+    }
+
+    if (restDays > 0 || parts.length === 0) {
+      parts.push(`${restDays} дн.`);
+    }
+
+    return parts.join(" ");
+  }
+
+  if (days >= 1) {
+    return `${days >= 10 ? Math.round(days) : days.toFixed(1)} дн.`;
+  }
+
+  const hours = days * 24;
+
+  if (hours >= 1) {
+    return `${hours >= 10 ? Math.round(hours) : hours.toFixed(1)} ч.`;
+  }
+
+  return `${Math.max(1, Math.round(hours * 60))} мин.`;
+}
+
+function buildDashaPath() {
+  const selectedKey = mahadashaSelect?.value ?? "saturn";
+  const startPlanet = DASHA_PLANET_MAP[selectedKey] ?? DASHA_PLANET_MAP.saturn;
+  const levelCount = getSelectedDashaLevelCount();
+  const path = [
+    {
+      level: DASHA_LEVELS[0],
+      planet: startPlanet,
+    },
+  ];
+
+  while (path.length < levelCount) {
+    const parentPlanet = path[path.length - 1].planet;
+    const sequence = getDashaSequenceFrom(parentPlanet.key);
+    const planet = sequence[rng.range(0, sequence.length - 1)];
+
+    path.push({
+      level: DASHA_LEVELS[path.length],
+      planet,
+    });
+  }
+
+  return path.map((item, index, fullPath) => ({
+    ...item,
+    duration: formatDashaDuration(calculateDashaDurationDays(fullPath, index)),
+  }));
+}
+
+function formatDashaPath(path) {
+  return path
+    .map((item) => `${item.level.label} ${item.planet.genitive}`)
+    .join(" / ");
+}
+
 function clampDiceCount(value) {
   const parsed = Number.parseInt(value, 10);
 
@@ -563,6 +699,85 @@ function addCardHistory(cards) {
   });
 }
 
+function renderDashaPath(path) {
+  dashaChain.innerHTML = "";
+
+  path.forEach((item, index) => {
+    const node = document.createElement("article");
+    node.className = `dasha-node${index === path.length - 1 ? " is-final" : ""}`;
+    node.setAttribute("aria-label", `${item.level.label} ${item.planet.genitive}`);
+
+    const label = document.createElement("p");
+    label.className = "dasha-node-label";
+    label.textContent = item.level.label;
+
+    const planet = document.createElement("p");
+    planet.className = "dasha-node-planet";
+    planet.textContent = item.planet.name;
+
+    const meta = document.createElement("p");
+    meta.className = "dasha-node-meta";
+    meta.textContent = `≈ ${item.duration}`;
+
+    node.append(label, planet, meta);
+    dashaChain.appendChild(node);
+  });
+
+  const finalLevel = path[path.length - 1]?.level.label ?? "Антардаша";
+  dashaDepthResult.textContent = finalLevel;
+  dashaResult.textContent = formatDashaPath(path);
+}
+
+function addDashaHistory(path) {
+  dashaHistory.unshift({
+    level: path[path.length - 1].level.label,
+    combo: formatDashaPath(path),
+  });
+  dashaHistory = dashaHistory.slice(0, 8);
+
+  dashaHistoryList.innerHTML = "";
+  dashaHistory.forEach((entry) => {
+    const item = document.createElement("li");
+    item.textContent = `${entry.level}: ${entry.combo}`;
+    dashaHistoryList.appendChild(item);
+  });
+}
+
+function generateDasha(shouldSaveHistory = true) {
+  rng.stir(Date.now() ^ hashString(mahadashaSelect?.value ?? "saturn") ^ getSelectedDashaLevelCount());
+  currentDashaPath = buildDashaPath();
+  renderDashaPath(currentDashaPath);
+
+  if (shouldSaveHistory) {
+    addDashaHistory(currentDashaPath);
+    appPanel.classList.add("is-rolling");
+    generateDashaButton.disabled = true;
+    rollState.textContent = "Даши";
+
+    window.setTimeout(() => {
+      appPanel.classList.remove("is-rolling");
+      generateDashaButton.disabled = false;
+      rollState.textContent = "Готово";
+    }, prefersReducedMotion.matches ? 0 : 360);
+  }
+}
+
+function syncDashaDepthInputs(changedInput) {
+  const changedIndex = OPTIONAL_DASHA_DEPTHS.indexOf(changedInput.dataset.dashaDepth);
+
+  dashaDepthInputs.forEach((input) => {
+    const index = OPTIONAL_DASHA_DEPTHS.indexOf(input.dataset.dashaDepth);
+
+    if (changedInput.checked && index <= changedIndex) {
+      input.checked = true;
+    }
+
+    if (!changedInput.checked && index >= changedIndex) {
+      input.checked = false;
+    }
+  });
+}
+
 function setCardDeck(deckKey) {
   if (!DECKS[deckKey] || drawingCards) {
     return;
@@ -686,6 +901,14 @@ deckButtons.forEach((button) => {
 cardCountButtons.forEach((button) => {
   button.addEventListener("click", () => setCardCount(button.dataset.cardCount));
 });
+mahadashaSelect.addEventListener("change", () => generateDasha(false));
+generateDashaButton.addEventListener("click", () => generateDasha(true));
+dashaDepthInputs.forEach((input) => {
+  input.addEventListener("change", () => {
+    syncDashaDepthInputs(input);
+    generateDasha(false);
+  });
+});
 
 window.addEventListener("pointermove", stirFromEvent, { passive: true });
 window.addEventListener("pointerdown", stirFromEvent, { passive: true });
@@ -693,7 +916,7 @@ window.addEventListener("keydown", stirFromEvent);
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js?v=4").catch(() => {});
+    navigator.serviceWorker.register("./sw.js?v=5").catch(() => {});
   });
 }
 
@@ -701,3 +924,4 @@ initAccessGate();
 renderDice();
 currentCards = sampleCards(cardDeckKey, cardCount);
 renderCards(false);
+generateDasha(false);
